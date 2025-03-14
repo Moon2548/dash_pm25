@@ -1,0 +1,68 @@
+.cards {
+    padding: 20px;
+    margin: 10px;
+    background-color: darkblue;
+    border-radius: 20px;
+    display: block;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.cards:hover {
+    transform: translate(0px, -10px);
+}
+
+.aver {
+    margin: 5px;
+    padding: 5px;
+    background-color: dimgrey;
+    border-radius: 10px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.aver:hover {
+    transform: scale(1.05);
+}
+
+.title {
+    font-size: 1.5em;
+    font-weight: bold;
+    background-color: rgb(0, 183, 255);
+    margin: 10px;
+    padding: 10px;
+    font-family: monospace;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.my-tab--selected {
+    background-color: black;
+    color: white;
+    border-radius: 20px;
+    padding: 10px;
+    margin: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    text-align: center;
+}
+
+.my-tab {
+    background-color: white;
+    color: black;
+    border-radius: 20px;
+    padding: 10px;
+    margin: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    text-align: center;
+}
+
+.my-tab--selected:hover {
+    background-color: gray;
+}
+
+.my-tab:hover {
+    transform: scale(1.05);
+    background-color: greenyellow;
+}
