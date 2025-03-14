@@ -19,6 +19,7 @@ eng = pd.read_excel("export-pm25_eng-1d.xlsx")
 markers = [
     # {"id": "bangkok", "position": [13.7563, 100.5018], "name": "Bangkok"},
     {"id": "eng_psu", "position": [7.0070763, 100.5021177], "name": "Eng PSU"},
+    {"id": "surat", "position": [9.139554, 99.3301465], "name": "Surat"},
 ]
 thailand_bounds = [[25.5, 92.3], [0.6, 110.7]]
 
