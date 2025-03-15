@@ -208,4 +208,18 @@ def predic(n_click, day):
             markers=True,
         )
 
+        selected_index = 0
+        x_point = result.index[selected_index]
+        y_point = result["Predictions"][selected_index]
+
+        fig.add_trace(
+            go.Scatter(
+                x=[x_point],
+                y=[y_point],
+                mode="markers",
+                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+                name=f"จุดที่ {selected_index + 1}",  # กำหนดชื่อของ trace
+            )
+        )
+
         return dcc.Graph(figure=fig)
