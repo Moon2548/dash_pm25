@@ -178,7 +178,7 @@ def update_graphs(selected_values, start_date, end_date):
 
 def predic(n_click, day):
     if n_click:
-        result = eng_model_predict_2_5(day+1)
+        result = eng_model_predict_2_5(int(day)+2)
 
         # สร้างกราฟแสดงเฉพาะ Predictions
         fig = px.line(
