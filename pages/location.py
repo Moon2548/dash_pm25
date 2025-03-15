@@ -107,24 +107,36 @@ def render_content(tab):
                     style={"text-align": "center"},
                     children=[
                         html.H1("Data"),
-                        dcc.Checklist(
-                            id="checklist",
-                            options=[
-                                {"label": "pm 10", "value": "pm_10"},
-                                {"label": "pm 2.5", "value": "pm_2_5"},
-                                {"label": "Temperature", "value": "temperature"},
-                                {"label": "Humidity", "value": "humidity"},
+                        html.Div(
+                            style={
+                                "display": "grid",
+                                "grid-template-columns": "1fr 1fr",
+                            },
+                            children=[
+                                dcc.Checklist(
+                                    style={"display": "flex"},
+                                    id="checklist",
+                                    options=[
+                                        {"label": "pm 10", "value": "pm_10"},
+                                        {"label": "pm 2.5", "value": "pm_2_5"},
+                                        {
+                                            "label": "Temperature",
+                                            "value": "temperature",
+                                        },
+                                        {"label": "Humidity", "value": "humidity"},
+                                    ],
+                                    # value=["pm_10", "pm_2_5", "temperature", "humidity"],
+                                    labelStyle={"display": "block"},
+                                ),
+                                dcc.DatePickerRange(
+                                    id="date-range",
+                                    min_date_allowed=eng["timestamp"].min().date(),
+                                    max_date_allowed=eng["timestamp"].max().date(),
+                                    start_date=eng["timestamp"].min().date(),
+                                    end_date=eng["timestamp"].max().date(),
+                                    display_format="YYYY-MM-DD",
+                                ),
                             ],
-                            value=["pm_10", "pm_2_5", "temperature", "humidity"],
-                            labelStyle={"display": "block"},
-                        ),
-                        dcc.DatePickerRange(
-                            id="date-range",
-                            min_date_allowed=eng["timestamp"].min().date(),
-                            max_date_allowed=eng["timestamp"].max().date(),
-                            start_date=eng["timestamp"].min().date(),
-                            end_date=eng["timestamp"].max().date(),
-                            display_format="YYYY-MM-DD",
                         ),
                     ],
                 ),
@@ -163,11 +175,14 @@ def update_graphs(selected_values, start_date, end_date):
     mask = eng["timestamp"].between(start_date, end_date)
     filtered_df = eng[mask]
     graphs = []
-    for value in selected_values:
-        title = value.replace("_", " ").title()
-        graph = create_line_graph(filtered_df, value, title)
-        graphs.append(html.Div(className="cards", children=[graph]))
-    return graphs
+    if selected_values is None:
+        return html.Div()
+    else:
+        for value in selected_values:
+            title = value.replace("_", " ").title()
+            graph = create_line_graph(filtered_df, value, title)
+            graphs.append(html.Div(className="cards", children=[graph]))
+        return graphs
 
 
 @callback(
@@ -175,10 +190,9 @@ def update_graphs(selected_values, start_date, end_date):
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
 )
-
 def predic(n_click, day):
     if n_click:
-        result = eng_model_predict_2_5(day+1)
+        result = eng_model_predict_2_5(day + 1)
 
         # สร้างกราฟแสดงเฉพาะ Predictions
         fig = px.line(
@@ -187,7 +201,7 @@ def predic(n_click, day):
             y="Predictions",  # แสดงแค่คอลัมน์ 'Predictions'
             labels={"index": "Time", "Predictions": "PM2.5"},
             title="Predictions of PM2.5",
-            markers=True
+            markers=True,
         )
 
         return dcc.Graph(figure=fig)
