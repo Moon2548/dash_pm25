@@ -8,10 +8,6 @@
     transition: all 0.3s ease;
 }
 
-.cards:hover {
-    transform: translate(0px, -10px);
-}
-
 .aver {
     margin: 5px;
     padding: 5px;
