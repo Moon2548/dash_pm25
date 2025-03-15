@@ -1,3 +1,5 @@
+from pages.function_eng_model import eng_model_predict_2_5
+
 from dash import (
     html,
     dcc,
@@ -173,25 +175,18 @@ def update_graphs(selected_values, start_date, end_date):
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
 )
+
 def predic(n_click, day):
     if n_click:
-        model = load_model("temp_model_1")
+        result = eng_model_predict_2_5(day+1)
 
-        # ตัวอย่างข้อมูลสภาพอากาศที่ใช้ทำนายค่าฝุ่น
-        data = eng
-
-        # ทำนายค่าฝุ่น PM2.5
-        predictions = predict_model(model, data=data)
-
-        # เพิ่มค่าที่ทำนายเข้าไปใน DataFrame
-        data["predicted_pm2_5"] = predictions["prediction_label"]
         fig = px.line(
-            data,
-            x=data.index,
-            y="predicted_pm2_5",
-            labels={"index": "Time", "predicted_pm2_5": "Predicted PM2.5"},
-            title="Forecast of PM2.5 Levels",
-            markers=True,
+            result,
+            x=result.index,
+            y=["Predictions", "Actual PM2.5"],
+            labels={"index": "Time", "value": "PM2.5", "variable": "Type"},
+            title="Predictions vs Actual PM2.5",
+            markers=True
         )
 
-        return fig
+        return dcc.Graph(figure=fig)
