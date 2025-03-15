@@ -158,7 +158,11 @@ def render_content(tab):
                             type="number",
                             placeholder="days",
                         ),
-                        html.Div(id="prediction-output"),
+                        dcc.Loading(
+                            children=[
+                                html.Div(id="prediction-output"),
+                            ]
+                        ),
                     ],
                 ),
             ],
