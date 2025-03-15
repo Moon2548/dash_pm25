@@ -97,8 +97,13 @@ def create_line_graph(df, y_column, title):
         return html.Div(f"No data for {title}")
 
 
-@callback(Output("tabs-content", "children"), Input("tabs", "value"))
-def render_content(tab):
+@callback(
+    Output("tabs-content", "children"), Input("tabs", "value"), Input("url", "pathname")
+)
+def render_content(tab, pathname):
+    city_name = pathname.split("/")[-1]
+    if city_name == "eng_psu":
+        data = pd.read_csv("export_data/filtered_data_3_best.csv")
     if tab == "tab-1":
         return html.Div(
             children=[
@@ -134,7 +139,7 @@ def render_content(tab):
                                     max_date_allowed=eng["timestamp"].max().date(),
                                     start_date=eng["timestamp"].min().date(),
                                     end_date=eng["timestamp"].max().date(),
-                                    display_format="YYYY-MM-DD",
+                                    display_format="MM-DD-YYYY",
                                 ),
                             ],
                         ),
@@ -174,10 +179,14 @@ def render_content(tab):
     Input("checklist", "value"),
     Input("date-range", "start_date"),
     Input("date-range", "end_date"),
+    Input("url", "pathname"),
 )
-def update_graphs(selected_values, start_date, end_date):
-    mask = eng["timestamp"].between(start_date, end_date)
-    filtered_df = eng[mask]
+def update_graphs(selected_values, start_date, end_date, pathname):
+    city_name = pathname.split("/")[-1]
+    if city_name == "eng_psu":
+        data = pd.read_csv("export_data/filtered_data_3_best.csv")
+    mask = data["timestamp"].between(start_date, end_date)
+    filtered_df = data[mask]
     graphs = []
     if selected_values is None:
         return html.Div()
@@ -193,10 +202,13 @@ def update_graphs(selected_values, start_date, end_date):
     Output("prediction-output", "children"),
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
+    Input("url", "pathname"),
 )
-def predic(n_click, day):
+def predic(n_click, day, pathname):
+    city_name = pathname.split("/")[-1]
     if n_click:
-        result = eng_model_predict_2_5(day + 1)
+        if city_name == "eng_psu":
+            result = eng_model_predict_2_5(day + 1)
 
         # สร้างกราฟแสดงเฉพาะ Predictions
         fig = px.line(
