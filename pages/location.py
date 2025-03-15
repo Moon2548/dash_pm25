@@ -210,11 +210,13 @@ def predic(n_click, day, pathname):
         if city_name == "eng_psu":
             result = eng_model_predict_2_5(int(day) + 2)
 
-        # สร้างกราฟแสดงเฉพาะ Predictions
+        # ลบ NaN ออกจาก Predictions ก่อนพล็อต
+        result_clean = result.dropna(subset=["Predictions"])
+
         fig = px.line(
-            result,
-            x=result.index,
-            y="Predictions",  # แสดงแค่คอลัมน์ 'Predictions'
+            result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
+            x=result_clean.index,
+            y="Predictions",
             labels={"index": "Time", "Predictions": "PM2.5"},
             title="Predictions of PM2.5",
             markers=True,
