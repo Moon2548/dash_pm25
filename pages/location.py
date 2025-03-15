@@ -97,8 +97,13 @@ def create_line_graph(df, y_column, title):
         return html.Div(f"No data for {title}")
 
 
-@callback(Output("tabs-content", "children"), Input("tabs", "value"))
-def render_content(tab):
+@callback(
+    Output("tabs-content", "children"), Input("tabs", "value"), Input("url", "pathname")
+)
+def render_content(tab, pathname):
+    city_name = pathname.split("/")[-1]
+    if city_name == "eng_psu":
+        data = pd.read_csv("export_data/filtered_data_3_best.csv")
     if tab == "tab-1":
         return html.Div(
             children=[
@@ -107,24 +112,36 @@ def render_content(tab):
                     style={"text-align": "center"},
                     children=[
                         html.H1("Data"),
-                        dcc.Checklist(
-                            id="checklist",
-                            options=[
-                                {"label": "pm 10", "value": "pm_10"},
-                                {"label": "pm 2.5", "value": "pm_2_5"},
-                                {"label": "Temperature", "value": "temperature"},
-                                {"label": "Humidity", "value": "humidity"},
+                        html.Div(
+                            style={
+                                "display": "grid",
+                                "grid-template-columns": "1fr 1fr",
+                            },
+                            children=[
+                                dcc.Checklist(
+                                    style={"display": "flex"},
+                                    id="checklist",
+                                    options=[
+                                        {"label": "pm 10", "value": "pm_10"},
+                                        {"label": "pm 2.5", "value": "pm_2_5"},
+                                        {
+                                            "label": "Temperature",
+                                            "value": "temperature",
+                                        },
+                                        {"label": "Humidity", "value": "humidity"},
+                                    ],
+                                    # value=["pm_10", "pm_2_5", "temperature", "humidity"],
+                                    labelStyle={"display": "block"},
+                                ),
+                                dcc.DatePickerRange(
+                                    id="date-range",
+                                    min_date_allowed=eng["timestamp"].min().date(),
+                                    max_date_allowed=eng["timestamp"].max().date(),
+                                    start_date=eng["timestamp"].min().date(),
+                                    end_date=eng["timestamp"].max().date(),
+                                    display_format="MM-DD-YYYY",
+                                ),
                             ],
-                            value=["pm_10", "pm_2_5", "temperature", "humidity"],
-                            labelStyle={"display": "block"},
-                        ),
-                        dcc.DatePickerRange(
-                            id="date-range",
-                            min_date_allowed=eng["timestamp"].min().date(),
-                            max_date_allowed=eng["timestamp"].max().date(),
-                            start_date=eng["timestamp"].min().date(),
-                            end_date=eng["timestamp"].max().date(),
-                            display_format="YYYY-MM-DD",
                         ),
                     ],
                 ),
@@ -146,7 +163,11 @@ def render_content(tab):
                             type="number",
                             placeholder="days",
                         ),
-                        html.Div(id="prediction-output"),
+                        dcc.Loading(
+                            children=[
+                                html.Div(id="prediction-output"),
+                            ]
+                        ),
                     ],
                 ),
             ],
@@ -158,27 +179,36 @@ def render_content(tab):
     Input("checklist", "value"),
     Input("date-range", "start_date"),
     Input("date-range", "end_date"),
+    Input("url", "pathname"),
 )
-def update_graphs(selected_values, start_date, end_date):
-    mask = eng["timestamp"].between(start_date, end_date)
-    filtered_df = eng[mask]
+def update_graphs(selected_values, start_date, end_date, pathname):
+    city_name = pathname.split("/")[-1]
+    if city_name == "eng_psu":
+        data = pd.read_csv("export_data/filtered_data_3_best.csv")
+    mask = data["timestamp"].between(start_date, end_date)
+    filtered_df = data[mask]
     graphs = []
-    for value in selected_values:
-        title = value.replace("_", " ").title()
-        graph = create_line_graph(filtered_df, value, title)
-        graphs.append(html.Div(className="cards", children=[graph]))
-    return graphs
+    if selected_values is None:
+        return html.Div()
+    else:
+        for value in selected_values:
+            title = value.replace("_", " ").title()
+            graph = create_line_graph(filtered_df, value, title)
+            graphs.append(html.Div(className="cards", children=[graph]))
+        return graphs
 
 
 @callback(
     Output("prediction-output", "children"),
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
+    Input("url", "pathname"),
 )
-
-def predic(n_click, day):
+def predic(n_click, day, pathname):
+    city_name = pathname.split("/")[-1]
     if n_click:
-        result = eng_model_predict_2_5(int(day)+2)
+        if city_name == "eng_psu":
+            result = eng_model_predict_2_5(int(day) + 2)
 
         # สร้างกราฟแสดงเฉพาะ Predictions
         fig = px.line(
@@ -187,7 +217,21 @@ def predic(n_click, day):
             y="Predictions",  # แสดงแค่คอลัมน์ 'Predictions'
             labels={"index": "Time", "Predictions": "PM2.5"},
             title="Predictions of PM2.5",
-            markers=True
+            markers=True,
+        )
+
+        selected_index = 0
+        x_point = result.index[selected_index]
+        y_point = result["Predictions"][selected_index]
+
+        fig.add_trace(
+            go.Scatter(
+                x=[x_point],
+                y=[y_point],
+                mode="markers",
+                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+                name=f"จุดที่ {selected_index + 1}",  # กำหนดชื่อของ trace
+            )
         )
 
         return dcc.Graph(figure=fig)
