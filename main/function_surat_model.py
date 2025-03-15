@@ -1,12 +1,8 @@
-def eng_model_predict_2_5(days):
-    num_days = days # วันที่ต้องการทำนาย
-
+def surat_():
+    num_days = 365 # วันที่ต้องการทำนาย
     import pycaret
     import pandas as pd
-
-    # อ่านไฟล์ CSV
-    data = pd.read_csv('export_data/filtered_data_3_best.csv')
-    
+    data = pd.read_csv('../export_data_jsp01/clean_data_jsps001_1d.csv')
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data['timestamp'] = pd.to_datetime(data['timestamp'])
     data.set_index('timestamp', inplace=True)
@@ -32,7 +28,7 @@ def eng_model_predict_2_5(days):
     
     # ลบ index ที่ซ้ำกัน (ถ้ามี)
     data = data.loc[~data.index.duplicated(keep='first')]
-
+    
     last_date_temp = data.index[-1].strftime('%Y-%m-%d')
     data = data[['temperature']]
     data["year"] = data.index.year
@@ -92,7 +88,7 @@ def eng_model_predict_2_5(days):
     
     from pycaret.regression import load_model, predict_model
     
-    model_temp = load_model("main/temp_model_1")
+    model_temp = load_model("dt_jsps01_temp_model")
     data_compare = data_filtered.loc[:'2025-01-12']
     result = pd.DataFrame()
     
@@ -137,22 +133,19 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result
         result = pd.concat([result, predict_test_1], axis=0)
-    
-    #-----------PLOT GRAPH TEMP---------
+    #-------------TEMP PREDICT RESULT----------------------------
     real_data = data_filtered.loc[start_date:end_date]
     # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
-    result_plot.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
-    #-----------------------------------
-
-    #โหลด humi model
-    model_humi = load_model("main/humi_use_temp_model_2")
+    result_plot_temp = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
+    result_plot_temp.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
     
+    model_humi = load_model("br_humi_u_temp_model_jsps01")
     # อ่านไฟล์ CSV
-    data_humi = pd.read_csv('export_data/filtered_data_3_best.csv')
-
-    # ลบแถวล่าสุด (แถวสุดท้าย)
-    data_humi = data_humi.drop(data_humi.index[-1])
+    data_humi = pd.read_csv('../export_data_jsp01/clean_data_jsps001_1d.csv')
+    
+    # # ลบแถวล่าสุด (แถวสุดท้าย)
+    # data_humi = data_humi.drop(data_humi.index[-1])
+    data_humi.tail()
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data_humi['timestamp'] = pd.to_datetime(data_humi['timestamp'])
     data_humi.set_index('timestamp', inplace=True)
@@ -160,9 +153,21 @@ def eng_model_predict_2_5(days):
     # ตั้งค่า freq ให้กับ index
     data_humi = data_humi.asfreq('D')  # 'D' สำหรับรายวัน
     
+    # แสดงแถวที่มีค่าหายไปก่อนเติม
+    print("แถวที่มีค่าหายไปก่อนเติม:")
+    print(data_humi[data_humi.isnull().any(axis=1)])
+    
     # เติมค่าที่หายไปด้วยการ interpolate แบบเส้นตรง
-    data_humi.interpolate(method='linear', inplace=True)  
-
+    data_humi.interpolate(method='linear', inplace=True)
+    
+    # แสดงแถวที่ยังมีค่า NaN หลังจากเติม (ถ้ามี)
+    missing_rows_after = data_humi[data_humi.isnull().any(axis=1)]
+    if not missing_rows_after.empty:
+        print("แถวที่ยังมีค่าหายไปหลังเติม:")
+        print(missing_rows_after)
+    else:
+        print("ไม่มีค่าหายไปแล้ว")
+    
     # กำหนดจำนวนวันที่ต้องการเพิ่ม
     num_days = num_days
     
@@ -178,14 +183,14 @@ def eng_model_predict_2_5(days):
     
     # ลบ index ที่ซ้ำกัน (ถ้ามี)
     data_humi = data_humi.loc[~data_humi.index.duplicated(keep='first')]
-
-    last_date_humi = data_humi.index[-1].strftime('%Y-%m-%d')
     
+    data_humi.tail(10)
+    last_date_humi = data_humi.index[-1].strftime('%Y-%m-%d')
     # add temp predict column
     shifted_predictions_temp = result['prediction_label'].shift(-1).iloc[:-1]
     
     data_humi.loc[shifted_predictions_temp.index, 'temperature'] = shifted_predictions_temp
-
+    data_humi.tail(10)
     data_humi = data_humi[['humidity','temperature']]
     data_humi["year"] = data_humi.index.year
     data_humi["month"] = data_humi.index.month
@@ -267,21 +272,17 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result_humi
         result_humi = pd.concat([result_humi, predict_test_1], axis=0)
-    
-    #-----------PLOT GRAPH HUMI---------
+    #---------------------------Plot predict HUMI-----------------------
     real_data = data_filtered.loc[start_date:end_date]
     # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot = pd.concat([result_humi['prediction_label'].shift(-1), real_data['humidity']], axis=1)
-    result_plot.columns = ['Predictions', 'Actual HUMI']  # ตั้งชื่อคอลัมน์
-    #------------------------------------
-
-    #โหลดโมเดล PM 2.5
-    model_pm_2_5 = load_model("main/pm2_5_model_1")
-
+    result_plot_humi = pd.concat([result_humi['prediction_label'].shift(-1), real_data['humidity']], axis=1)
+    result_plot_hu_mi.columns = ['Predictions', 'Actual HUMI']  # ตั้งชื่อคอลัมน์
+    
+    model_pm_2_5 = load_model("gbr_pm_2_5_model")
     # อ่านไฟล์ CSV
-    data_pm_2_5 = pd.read_csv('export_data/filtered_data_3_best.csv')
+    data_pm_2_5 = pd.read_csv('../export_data_jsp01/clean_data_jsps001_1d.csv')
     # ลบแถวล่าสุด (แถวสุดท้าย)
-    data_pm_2_5 = data_pm_2_5.drop(data_pm_2_5.index[-1])
+    # data_pm_2_5 = data_pm_2_5.drop(data_pm_2_5.index[-1])
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data_pm_2_5['timestamp'] = pd.to_datetime(data_pm_2_5['timestamp'])
     data_pm_2_5.set_index('timestamp', inplace=True)
@@ -291,7 +292,7 @@ def eng_model_predict_2_5(days):
     
     # เติมค่าที่หายไปด้วยการ interpolate แบบเส้นตรง
     data_pm_2_5.interpolate(method='linear', inplace=True)
-
+    
     # กำหนดจำนวนวันที่ต้องการเพิ่ม
     num_days = num_days
     
@@ -307,10 +308,11 @@ def eng_model_predict_2_5(days):
     
     # ลบ index ที่ซ้ำกัน (ถ้ามี)
     data_pm_2_5 = data_pm_2_5.loc[~data_pm_2_5.index.duplicated(keep='first')]
-
+    
     last_date_pm_2_5 = data_humi.index[-1].strftime('%Y-%m-%d')
-
+    import pandas as pd
     # add humi predict column
+    
     # เลื่อนค่าของ prediction_label ไปข้างหน้า 1 วัน และตัดค่าแถวสุดท้ายที่ไม่มีผล
     shifted_predictions = result_humi['prediction_label'].shift(-1).iloc[:-1]
     
@@ -325,7 +327,6 @@ def eng_model_predict_2_5(days):
     shifted_predictions_temp = result['prediction_label'].shift(-1).iloc[:-1]
     
     data_pm_2_5.loc[shifted_predictions_temp.index, 'temperature'] = shifted_predictions_temp
-
     data_pm_2_5["year"] = data_pm_2_5.index.year
     data_pm_2_5["month"] = data_pm_2_5.index.month
     data_pm_2_5["day"] = data_pm_2_5.index.day
@@ -359,6 +360,8 @@ def eng_model_predict_2_5(days):
     
     # ความชื้นสัมพัทธ์เชิงดัชนี
     data_pm_2_5["rh_index"] = data_pm_2_5["humidity"] ** 2 / (data_pm_2_5["temperature"] + 1)
+    import pandas as pd
+    import numpy as np
     
     # เพิ่มฟีเจอร์ day_of_year
     data_pm_2_5['date'] = pd.to_datetime(data_pm_2_5[['year', 'month', 'day']])
@@ -404,6 +407,7 @@ def eng_model_predict_2_5(days):
         # ใส่เข้าไป
         data_compare = pd.concat([data_compare, test_1], axis=0)
     
+        lag_size = 30
         for i in range(1,lag_size+1):
             data_compare[f'pm_2_5_lag_{i}'] = data_compare['pm_2_5'].shift(i)
     
@@ -431,25 +435,11 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result_pm_2_5
         result_pm_2_5 = pd.concat([result_pm_2_5, predict_test_1], axis=0)
+    import pandas as pd
+    import matplotlib.pyplot as plt
     
-    #คำนวณวัน
-    from datetime import datetime, timedelta
-
-    # แปลง str เป็น datetime
-    date_str = '2025-01-13'
-    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-
-    # บวกวัน
-    days_to_add = days-1  # จำนวนวันที่ต้องการบวก
-    new_date = date_obj + timedelta(days=days_to_add)
-
-    # แสดงผลลัพธ์
-    print(new_date.strftime('%Y-%m-%d'))
-
-
-    real_data = data_filtered.loc[start_date:new_date]
+    real_data = data_filtered.loc[start_date:end_date]
     # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot_2_5 = pd.concat([(result_pm_2_5['prediction_label'].shift(-1))[start_date:new_date], real_data['pm_2_5']], axis=1)
-    result_plot_2_5.columns = ['Predictions', 'Actual PM2.5']  # ตั้งชื่อคอลัมน์
-
-    return  result_plot_2_5
+    result_plot = pd.concat([result_pm_2_5['prediction_label'], real_data['pm_2_5']], axis=1)
+    result_plot.columns = ['Predictions', 'Actual PM2.5']  # ตั้งชื่อคอลัมน์
+    
