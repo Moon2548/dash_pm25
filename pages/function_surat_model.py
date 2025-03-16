@@ -368,7 +368,7 @@ def surat_model_predict_2_5(days):
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
     # บวกวัน
-    days_to_add = days - 1  # จำนวนวันที่ต้องการบวก
+    days_to_add = days - 2  # จำนวนวันที่ต้องการบวก
     new_date = date_obj + timedelta(days=days_to_add)
 
     # แสดงผลลัพธ์
@@ -529,7 +529,7 @@ def surat_model_temp(days):
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
     # บวกวัน
-    days_to_add = days - 1  # จำนวนวันที่ต้องการบวก
+    days_to_add = days - 2  # จำนวนวันที่ต้องการบวก
     new_date = date_obj + timedelta(days=days_to_add)
 
     # แสดงผลลัพธ์
@@ -777,7 +777,7 @@ def surat_model_humidity(days):
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     
     # บวกวัน
-    days_to_add = days - 1  # จำนวนวันที่ต้องการบวก
+    days_to_add = days - 2  # จำนวนวันที่ต้องการบวก
     new_date = date_obj + timedelta(days=days_to_add)
     
     # แสดงผลลัพธ์
