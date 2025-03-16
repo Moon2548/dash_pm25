@@ -46,8 +46,8 @@ fig.add_trace(
 register_page(__name__, path_template="/location/<city>")
 
 layout = html.Div(
+    style={},
     children=[
-        dcc.Store(id="n-clicks-store", data=0),
         dcc.Location(id="url", refresh=False),
         html.Div(
             className="title",
@@ -154,14 +154,26 @@ def render_content(tab, pathname):
     elif tab == "tab-2":
         return html.Div(
             children=[
+                dcc.Store(id="n-clicks-store", data=0),
+                dcc.Store(id="show-data", data=0),
                 html.H1("Predictions"),
                 dcc.Graph(figure=fig),
                 html.Div(
                     id="pre",
-                    # children=[
-                    #     html.Button("Previous", id="prev-button", n_clicks=0),
-                    #     html.Button("Next", id="next-button", n_clicks=0),
-                    # ],
+                    children=[
+                        html.Button(
+                            "Previous",
+                            style={"display": "none"},
+                            id="prev-button",
+                            n_clicks=0,
+                        ),
+                        html.Button(
+                            "Next",
+                            style={"display": "none"},
+                            id="next-button",
+                            n_clicks=0,
+                        ),
+                    ],
                 ),
                 html.Div(
                     className="cards",
@@ -210,15 +222,25 @@ def update_graphs(selected_values, start_date, end_date, pathname):
 
 @callback(
     # Output("prediction-output", "children"),
-    Output("pre", "children"),
+    # Output("pre", "children"),
+    Output("show-data", "data"),
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
     Input("url", "pathname"),
 )
 def predic(n_click, day, pathname):
     city_name = pathname.split("/")[-1]
+
+    ctx = callback_context
+
+    if not ctx.triggered:
+        return 0
+
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
     global result_clean
-    if n_click:
+
+    if button_id == "predict-button":
         if city_name == "eng_psu":
             result = eng_model_predict_2_5(int(day) + 2)
 
@@ -248,10 +270,9 @@ def predic(n_click, day, pathname):
         #     )
         # )
 
-        return (
-            html.Button("Previous", id="prev-button", n_clicks=0),
-            html.Button("Next", id="next-button", n_clicks=0),
-        )
+        return 1
+
+    return 0
 
 
 @callback(
@@ -284,29 +305,59 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
 
 
 @callback(
+    Output("pre", "children"),
     Output("prediction-output", "children"),
     Input("n-clicks-store", "data"),
+    Input("show-data", "data"),
 )
-def last_pre(click):
-    fig_pre = px.line(
-        result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
-        x=result_clean.index,
-        y="Predictions",
-        labels={"index": "Time", "Predictions": "PM2.5"},
-        title="Predictions of PM2.5",
-        markers=True,
-    )
-
-    x_point = result_clean.index[click]
-    y_point = result_clean["Predictions"][click]
-
-    fig_pre.add_trace(
-        go.Scatter(
-            x=[x_point],
-            y=[y_point],
-            mode="markers",
-            marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
-            name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
+def last_pre(click, data):
+    if data == 1:
+        fig_pre = px.line(
+            result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
+            x=result_clean.index,
+            y="Predictions",
+            labels={"index": "Time", "Predictions": "PM2.5"},
+            title="Predictions of PM2.5",
+            markers=True,
         )
-    )
-    return dcc.Graph(figure=fig_pre)
+
+        x_point = result_clean.index[click]
+        y_point = result_clean["Predictions"][click]
+
+        fig_pre.add_trace(
+            go.Scatter(
+                x=[x_point],
+                y=[y_point],
+                mode="markers",
+                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+                name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
+            )
+        )
+        return [
+            html.Button(
+                "Previous",
+                id="prev-button",
+                n_clicks=0,
+            ),
+            html.Button(
+                "Next",
+                id="next-button",
+                n_clicks=0,
+            ),
+        ], dcc.Graph(figure=fig_pre)
+
+    else:
+        return [
+            html.Button(
+                "Previous",
+                style={"display": "none"},
+                id="prev-button",
+                n_clicks=0,
+            ),
+            html.Button(
+                "Next",
+                style={"display": "none"},
+                id="next-button",
+                n_clicks=0,
+            ),
+        ], []
