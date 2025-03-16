@@ -126,6 +126,7 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result
         result = pd.concat([result, predict_test_1], axis=0)
+    
     #------------TEMP PREDICT VALUE--------------
     
     real_data = data_filtered.loc[start_date:end_date]
@@ -508,7 +509,7 @@ def eng_model_temp(days):
     
     return result_plot_temp
 
-def eng_model_predict_2_5(days):
+def eng_model_humidity(days):
     num_days = days # วันที่ต้องการทำนาย
     
     import pycaret
@@ -635,6 +636,7 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result
         result = pd.concat([result, predict_test_1], axis=0)
+    
     #------------TEMP PREDICT VALUE--------------
     
     real_data = data_filtered.loc[start_date:end_date]
