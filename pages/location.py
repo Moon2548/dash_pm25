@@ -27,19 +27,12 @@ fig.add_trace(
             "axis": {"range": [None, 100]},
             "bar": {"color": "blue"},
             "steps": [
-                {"range": [0, 30], "color": "lightgreen"},
-                {"range": [30, 60], "color": "yellow"},
-                {"range": [60, 100], "color": "red"},
+                {"range": [0, 100], "color": "gray"},
             ],
-            "threshold": {
-                "line": {"color": "red", "width": 4},
-                "thickness": 0.75,
-                "value": 80,
-            },
         },
-        value=eng["pm_2_5"].mean(),
+        value=0,
         domain={"x": [0, 1], "y": [0, 1]},
-        title={"text": "Test  Avg PM 2.5  Test"},
+        title={"text": "---"},
     )
 )
 
@@ -157,7 +150,7 @@ def render_content(tab, pathname):
                 dcc.Store(id="n-clicks-store", data=0),
                 dcc.Store(id="show-data", data=0),
                 html.H1("Predictions"),
-                dcc.Graph(figure=fig),
+                dcc.Graph(id="indicator-pre", figure=fig),
                 html.Div(
                     id="pre",
                     children=[
@@ -307,6 +300,7 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
 @callback(
     Output("pre", "children"),
     Output("prediction-output", "children"),
+    Output("indicator-pre", "figure"),
     Input("n-clicks-store", "data"),
     Input("show-data", "data"),
 )
@@ -324,6 +318,31 @@ def last_pre(click, data):
         x_point = result_clean.index[click]
         y_point = result_clean["Predictions"][click]
 
+        indi = go.Figure()
+
+        indi.add_trace(
+            go.Indicator(
+                mode="gauge+number",
+                gauge={
+                    "axis": {"range": [None, 100]},
+                    "bar": {"color": "blue"},
+                    "steps": [
+                        {"range": [0, 30], "color": "lightgreen"},
+                        {"range": [30, 60], "color": "yellow"},
+                        {"range": [60, 100], "color": "red"},
+                    ],
+                    "threshold": {
+                        "line": {"color": "red", "width": 4},
+                        "thickness": 0.75,
+                        "value": 80,
+                    },
+                },
+                value=y_point,
+                domain={"x": [0, 1], "y": [0, 1]},
+                title={"text": "PM 2.5"},
+            )
+        )
+
         fig_pre.add_trace(
             go.Scatter(
                 x=[x_point],
@@ -333,31 +352,39 @@ def last_pre(click, data):
                 name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
             )
         )
-        return [
-            html.Button(
-                "Previous",
-                id="prev-button",
-                n_clicks=0,
-            ),
-            html.Button(
-                "Next",
-                id="next-button",
-                n_clicks=0,
-            ),
-        ], dcc.Graph(figure=fig_pre)
+        return (
+            [
+                html.Button(
+                    "Previous",
+                    id="prev-button",
+                    n_clicks=0,
+                ),
+                html.Button(
+                    "Next",
+                    id="next-button",
+                    n_clicks=0,
+                ),
+            ],
+            dcc.Graph(figure=fig_pre),
+            indi,
+        )
 
     else:
-        return [
-            html.Button(
-                "Previous",
-                style={"display": "none"},
-                id="prev-button",
-                n_clicks=0,
-            ),
-            html.Button(
-                "Next",
-                style={"display": "none"},
-                id="next-button",
-                n_clicks=0,
-            ),
-        ], []
+        return (
+            [
+                html.Button(
+                    "Previous",
+                    style={"display": "none"},
+                    id="prev-button",
+                    n_clicks=0,
+                ),
+                html.Button(
+                    "Next",
+                    style={"display": "none"},
+                    id="next-button",
+                    n_clicks=0,
+                ),
+            ],
+            [],
+            fig,
+        )
