@@ -62,3 +62,19 @@
     transform: scale(1.05);
     background-color: greenyellow;
 }
+
+#loading-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    /* ให้ loading อยู่เหนือองค์ประกอบอื่นๆ */
+}
+
+#loading-container .dash-spinner {
+    width: 100px;
+    /* ปรับขนาด spinner */
+    height: 100px;
+    /* ปรับขนาด spinner */
+}

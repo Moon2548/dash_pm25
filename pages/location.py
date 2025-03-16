@@ -162,7 +162,6 @@ def render_content(tab, pathname):
         return html.Div(
             children=[
                 dcc.Store(id="n-clicks-store", data=0),
-                dcc.Store(id="show-data", data=0),
                 dcc.Store(id="mode", data=1),
                 html.H1("Predictions"),
                 html.Div(
@@ -206,11 +205,23 @@ def render_content(tab, pathname):
                             type="number",
                             placeholder="days",
                         ),
-                        dcc.Loading(
+                        html.Div(
+                            id="loading-container",
                             children=[
-                                html.Div(id="prediction-output"),
-                            ]
+                                dcc.Loading(
+                                    id="loading-1",
+                                    overlay_style={
+                                        "visibility": "visible",
+                                        "filter": "blur(2px)",
+                                    },
+                                    type="cube",
+                                    children=[
+                                        dcc.Store(id="show-data", data=0),
+                                    ],
+                                ),
+                            ],
                         ),
+                        html.Div(id="prediction-output"),
                     ],
                 ),
             ],
@@ -271,9 +282,9 @@ def mode(a, b, c):
     # Output("pre", "children"),
     Output("show-data", "data"),
     Input("predict-button", "n_clicks"),
-    Input("input-day", "value"),
-    Input("url", "pathname"),
-    Input("mode", "data"),
+    State("input-day", "value"),
+    State("url", "pathname"),
+    State("mode", "data"),
 )
 def predic(n_click, day, pathname, mode):
     city_name = pathname.split("/")[-1]
@@ -400,7 +411,7 @@ def last_pre(click, data, mode):
                 y=[y_point],
                 mode="markers",
                 marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
-                name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
+                name=f"วันที่ {click + 1}",  # กำหนดชื่อของ trace
             )
         )
 
