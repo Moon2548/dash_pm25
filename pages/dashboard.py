@@ -434,7 +434,7 @@ def display_marker_info(*args):
                         "View Detailed Analytics",
                     ],
                     href=f"/location/{marker_info['id']}",
-                    target="_blank",
+                    # target="_blank",
                     style={
                         "display": "inline-block",
                         "padding": "12px 24px",

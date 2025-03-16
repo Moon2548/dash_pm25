@@ -296,7 +296,7 @@ def render_content(tab, pathname):
                                 dcc.Checklist(
                                     id="checklist",
                                     options=[
-                                        {"label": " PM 10", "value": "pm_10"},
+                                        # {"label": " PM 10", "value": "pm_10"},
                                         {"label": " PM 2.5", "value": "pm_2_5"},
                                         {
                                             "label": " Temperature",
@@ -453,7 +453,7 @@ def render_content(tab, pathname):
                                     id="input-day",
                                     type="number",
                                     min=1,
-                                    max=30,
+                                    # max=30,
                                     value=7,
                                     placeholder="days",
                                     style={
