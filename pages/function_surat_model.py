@@ -6,7 +6,7 @@ def surat_model_predict_2_5(days):
     import numpy as np
 
     # อ่านไฟล์ CSV
-    data = pd.read_csv("../export_data/clean_data_jsps001_1d.csv")
+    data = pd.read_csv("export_data/clean_data_jsps001_1d.csv")
 
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data["timestamp"] = pd.to_datetime(data["timestamp"])
@@ -83,7 +83,7 @@ def surat_model_predict_2_5(days):
     data_filtered = data_temp.loc["2023-09":]  # ดึงข้อมูลตั้งแต่กันยายน 2023 เป็นต้นไป
     from pycaret.regression import load_model, predict_model
 
-    model_temp = load_model("../eng_psu_hatyai/main/model_surat/dt_jsps01_temp_model")
+    model_temp = load_model("main/model_surat/dt_jsps01_temp_model")
 
     data_compare = data_filtered.loc[:"2025-01-12"]
     result = pd.DataFrame()
@@ -141,7 +141,7 @@ def surat_model_predict_2_5(days):
 
     # #---------------------------------------------
 
-    model_humi = load_model("../main/mode_surat/br_humi_u_temp_model_jsps01")
+    model_humi = load_model("main/model_surat/br_humi_u_temp_model_jsps01")
 
     # อ่านไฟล์ CSV
     data_humi = data.copy()
@@ -223,7 +223,7 @@ def surat_model_predict_2_5(days):
     # result_plot_humi.columns = ['Predictions', 'Actual HUMI']  # ตั้งชื่อคอลัมน์
     # #------------------------------------
 
-    model_pm_2_5 = load_model("../main/model_surat/gbr_pm_2_5_model")
+    model_pm_2_5 = load_model("main/model_surat/gbr_pm_2_5_model")
 
     # อ่านไฟล์ CSV
     data_pm_2_5 = data.copy()
@@ -395,7 +395,7 @@ def surat_model_temp(days):
     import numpy as np
 
     # อ่านไฟล์ CSV
-    data = pd.read_csv("../export_data/clean_data_jsps001_1d.csv")
+    data = pd.read_csv("export_data/clean_data_jsps001_1d.csv")
 
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data["timestamp"] = pd.to_datetime(data["timestamp"])
@@ -472,7 +472,7 @@ def surat_model_temp(days):
     data_filtered = data_temp.loc["2023-09":]  # ดึงข้อมูลตั้งแต่กันยายน 2023 เป็นต้นไป
     from pycaret.regression import load_model, predict_model
 
-    model_temp = load_model("../eng_psu_hatyai/main/model_surat/dt_jsps01_temp_model")
+    model_temp = load_model("main/model_surat/dt_jsps01_temp_model")
 
     data_compare = data_filtered.loc[:"2025-01-12"]
     result = pd.DataFrame()
@@ -559,7 +559,7 @@ def surat_model_humidity(days):
     import numpy as np
 
     # อ่านไฟล์ CSV
-    data = pd.read_csv("../export_data/clean_data_jsps001_1d.csv")
+    data = pd.read_csv("export_data/clean_data_jsps001_1d.csv")
 
     # ตั้ง 'timestamp' เป็น index หากยังไม่ได้ทำ
     data["timestamp"] = pd.to_datetime(data["timestamp"])
@@ -636,7 +636,7 @@ def surat_model_humidity(days):
     data_filtered = data_temp.loc["2023-09":]  # ดึงข้อมูลตั้งแต่กันยายน 2023 เป็นต้นไป
     from pycaret.regression import load_model, predict_model
 
-    model_temp = load_model("../eng_psu_hatyai/main/model_surat/dt_jsps01_temp_model")
+    model_temp = load_model("main/model_surat/dt_jsps01_temp_model")
 
     data_compare = data_filtered.loc[:"2025-01-12"]
     result = pd.DataFrame()
@@ -694,7 +694,7 @@ def surat_model_humidity(days):
 
     # #---------------------------------------------
 
-    model_humi = load_model("../main/mode_surat/br_humi_u_temp_model_jsps01")
+    model_humi = load_model("main/model_surat/br_humi_u_temp_model_jsps01")
 
     # อ่านไฟล์ CSV
     data_humi = data.copy()
