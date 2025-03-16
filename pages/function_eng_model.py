@@ -126,12 +126,13 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result
         result = pd.concat([result, predict_test_1], axis=0)
+    
     #------------TEMP PREDICT VALUE--------------
     
-    real_data = data_filtered.loc[start_date:end_date]
-    # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot_temp = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
-    result_plot_temp.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
+    # real_data = data_filtered.loc[start_date:end_date]
+    # # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
+    # result_plot_temp = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
+    # result_plot_temp.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
     
     #---------------------------------------------
     
@@ -204,10 +205,10 @@ def eng_model_predict_2_5(days):
         result_humi = pd.concat([result_humi, predict_test_1], axis=0)
         
     #-----------PLOT GRAPH HUMI---------
-    real_data = data_filtered.loc[start_date:end_date]
-    # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot_humi = pd.concat([result_humi['prediction_label'].shift(-1), real_data['humidity']], axis=1)
-    result_plot_humi.columns = ['Predictions', 'Actual HUMI']  # ตั้งชื่อคอลัมน์
+    # real_data = data_filtered.loc[start_date:end_date]
+    # # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
+    # result_plot_humi = pd.concat([result_humi['prediction_label'].shift(-1), real_data['humidity']], axis=1)
+    # result_plot_humi.columns = ['Predictions', 'Actual HUMI']  # ตั้งชื่อคอลัมน์
     #------------------------------------
     model_pm_2_5 = load_model("main/dt_model_eng")
     # อ่านไฟล์ CSV
@@ -508,7 +509,7 @@ def eng_model_temp(days):
     
     return result_plot_temp
 
-def eng_model_predict_2_5(days):
+def eng_model_humidity(days):
     num_days = days # วันที่ต้องการทำนาย
     
     import pycaret
@@ -635,12 +636,13 @@ def eng_model_predict_2_5(days):
     
         # บันทึกลง result
         result = pd.concat([result, predict_test_1], axis=0)
+    
     #------------TEMP PREDICT VALUE--------------
     
-    real_data = data_filtered.loc[start_date:end_date]
-    # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
-    result_plot_temp = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
-    result_plot_temp.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
+    # real_data = data_filtered.loc[start_date:end_date]
+    # # สมมุติว่า result คือ DataFrame ที่รวม predictions กับ pm_10
+    # result_plot_temp = pd.concat([result['prediction_label'].shift(-1), real_data['temperature']], axis=1)
+    # result_plot_temp.columns = ['Predictions', 'Actual TEMP']  # ตั้งชื่อคอลัมน์
     
     #---------------------------------------------
     
