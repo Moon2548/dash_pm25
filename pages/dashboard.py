@@ -14,8 +14,6 @@ import plotly.express as px
 
 register_page(__name__, path="/")
 
-eng = pd.read_excel("export-pm25_eng-1d.xlsx")
-
 markers = [
     {"id": "eng_psu", "position": [7.0070763, 100.5021177], "name": "Eng PSU"},
     {"id": "surat", "position": [9.139554, 99.3301465], "name": "Surat"},
@@ -330,7 +328,7 @@ def display_marker_info(*args):
     marker_info = next((m for m in markers if m["id"] == clicked_id), None)
 
     if clicked_id == "eng_psu":
-        data = eng
+        data = pd.read_csv("export_data\\filtered_data_3_best.csv")
     if clicked_id == "surat":
         data = pd.read_csv("export_data\\clean_data_jsps001_1d.csv")
 
