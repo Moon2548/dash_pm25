@@ -74,11 +74,11 @@ layout = html.Div(
                             id="output",
                             style={"color": "white", "font-size": "20px"},
                         ),  # แสดงข้อมูล Marker ที่ถูกคลิก
-                        html.Div(
-                            className="aver",
-                            style={"color": "lightgreen"},
-                            id="average_pm10",
-                        ),
+                        # html.Div(
+                        #     className="aver",
+                        #     style={"color": "lightgreen"},
+                        #     id="average_pm10",
+                        # ),
                         html.Div(
                             className="aver",
                             style={"color": "yellow"},
@@ -106,7 +106,7 @@ layout = html.Div(
 # Callback ทำงานเมื่อคลิกที่ Marker
 @callback(
     Output("output", "children"),
-    Output("average_pm10", "children"),
+    # Output("average_pm10", "children"),
     Output("average_pm25", "children"),
     Output("average_temperature", "children"),
     Output("average_humidity", "children"),
@@ -116,18 +116,20 @@ layout = html.Div(
 def display_marker_info(*args):
     ctx = callback_context  # ตรวจสอบว่า input ไหนถูกกด
     if not ctx.triggered:
-        return "คลิกที่ Marker เพื่อดูข้อมูล", "", "", "", "", ""
+        return "คลิกที่ Marker เพื่อดูข้อมูล", "", "", "", ""
 
     clicked_id = ctx.triggered[0]["prop_id"].split(".")[0]  # หาค่า ID ที่ถูกคลิก
     marker_info = next((m for m in markers if m["id"] == clicked_id), None)
 
     if clicked_id == "eng_psu":
         data = eng
+    if clicked_id == "surat":
+        data = pd.read_csv("export_data\clean_data_jsps001_1d.csv")
 
     if marker_info:
         return (
             f"คุณกดที่ {marker_info['name']} (Lat: {marker_info['position'][0]}, Lon: {marker_info['position'][1]})",
-            f"ค่าเฉลี่ย PM10: {data['pm_10'].mean()}",
+            # f"ค่าเฉลี่ย PM10: {data['pm_10'].mean()}",
             f"ค่าเฉลี่ย PM2.5: {data['pm_2_5'].mean()}",
             f"ค่าเฉลี่ยอุณหภูมิ: {data['temperature'].mean()}",
             f"ค่าเฉลี่ยความชื้น: {data['humidity'].mean()}",
@@ -145,4 +147,4 @@ def display_marker_info(*args):
                 },
             ),
         )
-    return "Error: ไม่พบข้อมูล Marker", "", "", "", "", ""
+    return "Error: ไม่พบข้อมูล Marker", "", "", "", ""

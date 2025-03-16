@@ -3,6 +3,11 @@ from pages.function_eng_model import (
     eng_model_temp,
     eng_model_humidity,
 )
+from pages.function_surat_model import (
+    surat_model_predict_2_5,
+    surat_model_temp,
+    surat_model_humidity,
+)
 
 from dash import (
     html,
@@ -20,7 +25,9 @@ import plotly.graph_objects as go
 import datetime
 from pycaret.regression import load_model, predict_model
 
-eng = pd.read_excel("export-pm25_eng-1d.xlsx")
+eng = pd.read_csv("export_data/filtered_data_3_best.csv")
+
+surat = pd.read_csv("export_data/clean_data_jsps001_1d.csv")
 
 fig = go.Figure()
 
@@ -103,7 +110,10 @@ def create_line_graph(df, y_column, title):
 def render_content(tab, pathname):
     city_name = pathname.split("/")[-1]
     if city_name == "eng_psu":
-        data = pd.read_csv("export_data/filtered_data_3_best.csv")
+        data = eng
+    if city_name == "surat":
+        data = surat
+    data["timestamp"] = pd.to_datetime(data["timestamp"])
     if tab == "tab-1":
         return html.Div(
             children=[
@@ -135,10 +145,10 @@ def render_content(tab, pathname):
                                 ),
                                 dcc.DatePickerRange(
                                     id="date-range",
-                                    min_date_allowed=eng["timestamp"].min().date(),
-                                    max_date_allowed=eng["timestamp"].max().date(),
-                                    start_date=eng["timestamp"].min().date(),
-                                    end_date=eng["timestamp"].max().date(),
+                                    min_date_allowed=data["timestamp"].min().date(),
+                                    max_date_allowed=data["timestamp"].max().date(),
+                                    start_date=data["timestamp"].min().date(),
+                                    end_date=data["timestamp"].max().date(),
                                     display_format="MM-DD-YYYY",
                                 ),
                             ],
@@ -217,7 +227,9 @@ def render_content(tab, pathname):
 def update_graphs(selected_values, start_date, end_date, pathname):
     city_name = pathname.split("/")[-1]
     if city_name == "eng_psu":
-        data = pd.read_csv("export_data/filtered_data_3_best.csv")
+        data = eng
+    elif city_name == "surat":
+        data = surat
     mask = data["timestamp"].between(start_date, end_date)
     filtered_df = data[mask]
     graphs = []
@@ -283,6 +295,13 @@ def predic(n_click, day, pathname, mode):
                 result = eng_model_temp(int(day) + 2)
             elif mode == 3:
                 result = eng_model_humidity(int(day) + 2)
+        elif city_name == "surat":
+            if mode == 1:
+                result = surat_model_predict_2_5(int(day) + 2)
+            elif mode == 2:
+                result = surat_model_temp(int(day) + 2)
+            elif mode == 3:
+                result = surat_model_humidity(int(day) + 2)
 
         # ลบ NaN ออกจาก Predictions ก่อนพล็อต
         result_clean = result.dropna(subset=["Predictions"])
