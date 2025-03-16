@@ -197,7 +197,7 @@ layout = html.Div(
                                     },
                                     children=[
                                         html.H4(
-                                            "PM 2.5",
+                                            "Average PM 2.5",
                                             style={
                                                 "margin": "0 0 10px 0",
                                                 "color": "#b4530a",
@@ -225,7 +225,7 @@ layout = html.Div(
                                     },
                                     children=[
                                         html.H4(
-                                            "Temperature",
+                                            "Average Temperature",
                                             style={
                                                 "margin": "0 0 10px 0",
                                                 "color": "#0d47a1",
@@ -253,7 +253,7 @@ layout = html.Div(
                                     },
                                     children=[
                                         html.H4(
-                                            "Humidity",
+                                            "Average Humidity",
                                             style={
                                                 "margin": "0 0 10px 0",
                                                 "color": "#2e7d32",
