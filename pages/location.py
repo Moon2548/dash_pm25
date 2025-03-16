@@ -1,4 +1,8 @@
-from pages.function_eng_model import eng_model_predict_2_5
+from pages.function_eng_model import (
+    eng_model_predict_2_5,
+    eng_model_temp,
+    eng_model_humidity,
+)
 
 from dash import (
     html,
@@ -149,7 +153,21 @@ def render_content(tab, pathname):
             children=[
                 dcc.Store(id="n-clicks-store", data=0),
                 dcc.Store(id="show-data", data=0),
+                dcc.Store(id="mode", data=1),
                 html.H1("Predictions"),
+                html.Div(
+                    style={"text-align": "center"},
+                    children=[
+                        html.H2("mode"),
+                        html.Div(
+                            children=[
+                                html.Button("PM 2.5", id="select-pm"),
+                                html.Button("Temperature", id="select-temp"),
+                                html.Button("Humidity", id="select-humi"),
+                            ]
+                        ),
+                    ],
+                ),
                 dcc.Graph(id="indicator-pre", figure=fig),
                 html.Div(
                     id="pre",
@@ -171,7 +189,7 @@ def render_content(tab, pathname):
                 html.Div(
                     className="cards",
                     children=[
-                        html.H3("Predict PM 2.5"),
+                        html.H3("Predict PM 2.5", id="predict-name"),
                         html.Button("Predict", id="predict-button"),
                         dcc.Input(
                             id="input-day",
@@ -214,14 +232,38 @@ def update_graphs(selected_values, start_date, end_date, pathname):
 
 
 @callback(
+    Output("mode", "data"),
+    Output("predict-name", "children"),
+    Input("select-pm", "n_clicks"),
+    Input("select-temp", "n_clicks"),
+    Input("select-humi", "n_clicks"),
+)
+def mode(a, b, c):
+    ctx = callback_context
+
+    if not ctx.triggered:
+        return 1, "Predict PM 2.5"
+
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    if button_id == "select-pm":
+        return 1, "Predict PM 2.5"
+    elif button_id == "select-temp":
+        return 2, "Predict Temperature"
+    elif button_id == "select-humi":
+        return 3, "Predict Humidity"
+
+
+@callback(
     # Output("prediction-output", "children"),
     # Output("pre", "children"),
     Output("show-data", "data"),
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
     Input("url", "pathname"),
+    Input("mode", "data"),
 )
-def predic(n_click, day, pathname):
+def predic(n_click, day, pathname, mode):
     city_name = pathname.split("/")[-1]
 
     ctx = callback_context
@@ -235,7 +277,12 @@ def predic(n_click, day, pathname):
 
     if button_id == "predict-button":
         if city_name == "eng_psu":
-            result = eng_model_predict_2_5(int(day) + 2)
+            if mode == 1:
+                result = eng_model_predict_2_5(int(day) + 2)
+            elif mode == 2:
+                result = eng_model_temp(int(day) + 2)
+            elif mode == 3:
+                result = eng_model_humidity(int(day) + 2)
 
         # ลบ NaN ออกจาก Predictions ก่อนพล็อต
         result_clean = result.dropna(subset=["Predictions"])
@@ -303,20 +350,37 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
     Output("indicator-pre", "figure"),
     Input("n-clicks-store", "data"),
     Input("show-data", "data"),
+    Input("mode", "data"),
 )
-def last_pre(click, data):
+def last_pre(click, data, mode):
+    if mode == 1:
+        name = "PM 2.5"
+    elif mode == 2:
+        name = "Temperature"
+    elif mode == 3:
+        name = "Humidity"
     if data == 1:
         fig_pre = px.line(
             result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
             x=result_clean.index,
             y="Predictions",
-            labels={"index": "Time", "Predictions": "PM2.5"},
-            title="Predictions of PM2.5",
+            labels={"index": "Time", "Predictions": f"{name}"},
+            title=f"Predictions of {name}",
             markers=True,
         )
 
         x_point = result_clean.index[click]
         y_point = result_clean["Predictions"][click]
+
+        fig_pre.add_trace(
+            go.Scatter(
+                x=[x_point],
+                y=[y_point],
+                mode="markers",
+                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+                name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
+            )
+        )
 
         indi = go.Figure()
 
@@ -343,15 +407,6 @@ def last_pre(click, data):
             )
         )
 
-        fig_pre.add_trace(
-            go.Scatter(
-                x=[x_point],
-                y=[y_point],
-                mode="markers",
-                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
-                name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
-            )
-        )
         return (
             [
                 html.Button(
