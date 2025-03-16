@@ -6,7 +6,9 @@ from dash import (
     callback,
     Input,
     Output,
+    State,
     register_page,
+    callback_context,
 )
 import pandas as pd
 import plotly.express as px
@@ -45,6 +47,7 @@ register_page(__name__, path_template="/location/<city>")
 
 layout = html.Div(
     children=[
+        dcc.Store(id="n-clicks-store", data=0),
         dcc.Location(id="url", refresh=False),
         html.Div(
             className="title",
@@ -154,6 +157,13 @@ def render_content(tab, pathname):
                 html.H1("Predictions"),
                 dcc.Graph(figure=fig),
                 html.Div(
+                    id="pre",
+                    # children=[
+                    #     html.Button("Previous", id="prev-button", n_clicks=0),
+                    #     html.Button("Next", id="next-button", n_clicks=0),
+                    # ],
+                ),
+                html.Div(
                     className="cards",
                     children=[
                         html.H3("Predict PM 2.5"),
@@ -199,13 +209,15 @@ def update_graphs(selected_values, start_date, end_date, pathname):
 
 
 @callback(
-    Output("prediction-output", "children"),
+    # Output("prediction-output", "children"),
+    Output("pre", "children"),
     Input("predict-button", "n_clicks"),
     Input("input-day", "value"),
     Input("url", "pathname"),
 )
 def predic(n_click, day, pathname):
     city_name = pathname.split("/")[-1]
+    global result_clean
     if n_click:
         if city_name == "eng_psu":
             result = eng_model_predict_2_5(int(day) + 2)
@@ -213,27 +225,88 @@ def predic(n_click, day, pathname):
         # ลบ NaN ออกจาก Predictions ก่อนพล็อต
         result_clean = result.dropna(subset=["Predictions"])
 
-        fig = px.line(
-            result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
-            x=result_clean.index,
-            y="Predictions",
-            labels={"index": "Time", "Predictions": "PM2.5"},
-            title="Predictions of PM2.5",
-            markers=True,
+        # fig_pre = px.line(
+        #     result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
+        #     x=result_clean.index,
+        #     y="Predictions",
+        #     labels={"index": "Time", "Predictions": "PM2.5"},
+        #     title="Predictions of PM2.5",
+        #     markers=True,
+        # )
+
+        # selected_index = 0
+        # x_point = result_clean.index[selected_index]
+        # y_point = result_clean["Predictions"][selected_index]
+
+        # fig_pre.add_trace(
+        #     go.Scatter(
+        #         x=[x_point],
+        #         y=[y_point],
+        #         mode="markers",
+        #         marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+        #         name=f"จุดที่ {selected_index + 1}",  # กำหนดชื่อของ trace
+        #     )
+        # )
+
+        return (
+            html.Button("Previous", id="prev-button", n_clicks=0),
+            html.Button("Next", id="next-button", n_clicks=0),
         )
 
-        selected_index = 0
-        x_point = result.index[selected_index]
-        y_point = result["Predictions"][selected_index]
 
-        fig.add_trace(
-            go.Scatter(
-                x=[x_point],
-                y=[y_point],
-                mode="markers",
-                marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
-                name=f"จุดที่ {selected_index + 1}",  # กำหนดชื่อของ trace
-            )
+@callback(
+    Output("n-clicks-store", "data"),
+    Input("prev-button", "n_clicks"),
+    Input("next-button", "n_clicks"),
+    Input("input-day", "value"),
+    State("n-clicks-store", "data"),
+)
+def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
+    ctx = callback_context
+
+    if not ctx.triggered:
+        return stored_n_clicks  # ไม่มีการ trigger อะไรเลย
+
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    if button_id == "prev-button":
+        if stored_n_clicks <= 0:
+            return 0
+        else:
+            return stored_n_clicks - 1
+    elif button_id == "next-button":
+        if stored_n_clicks >= int(day):
+            return int(day)
+        else:
+            return stored_n_clicks + 1
+    else:
+        return stored_n_clicks  # กรณี input-day เปลี่ยนโดยไม่มีการกดปุ่ม
+
+
+@callback(
+    Output("prediction-output", "children"),
+    Input("n-clicks-store", "data"),
+)
+def last_pre(click):
+    fig_pre = px.line(
+        result_clean,  # ใช้ข้อมูลที่ลบ NaN แล้ว
+        x=result_clean.index,
+        y="Predictions",
+        labels={"index": "Time", "Predictions": "PM2.5"},
+        title="Predictions of PM2.5",
+        markers=True,
+    )
+
+    x_point = result_clean.index[click]
+    y_point = result_clean["Predictions"][click]
+
+    fig_pre.add_trace(
+        go.Scatter(
+            x=[x_point],
+            y=[y_point],
+            mode="markers",
+            marker=dict(size=10, color="green"),  # ปรับขนาดและสีของจุดได้
+            name=f"จุดที่ {click + 1}",  # กำหนดชื่อของ trace
         )
-
-        return dcc.Graph(figure=fig)
+    )
+    return dcc.Graph(figure=fig_pre)
