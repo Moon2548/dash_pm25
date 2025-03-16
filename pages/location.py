@@ -321,8 +321,9 @@ def predic(n_click, day, pathname, mode):
     Input("next-button", "n_clicks"),
     Input("input-day", "value"),
     State("n-clicks-store", "data"),
+    Input("predict-button", "n_clicks"),
 )
-def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
+def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks, pre):
     ctx = callback_context
 
     if not ctx.triggered:
@@ -340,6 +341,8 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks):
             return int(day)
         else:
             return stored_n_clicks + 1
+    elif button_id == "predict-button":
+        return 0
     else:
         return stored_n_clicks  # กรณี input-day เปลี่ยนโดยไม่มีการกดปุ่ม
 
@@ -403,7 +406,7 @@ def last_pre(click, data, mode):
                 },
                 value=y_point,
                 domain={"x": [0, 1], "y": [0, 1]},
-                title={"text": "PM 2.5"},
+                title={"text": f"{name}"},
             )
         )
 
