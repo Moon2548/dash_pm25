@@ -337,7 +337,7 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks, pre):
         else:
             return stored_n_clicks - 1
     elif button_id == "next-button":
-        if stored_n_clicks >= int(day):
+        if stored_n_clicks >= int(day) - 1:
             return int(day)
         else:
             return stored_n_clicks + 1
@@ -390,23 +390,26 @@ def last_pre(click, data, mode):
         indi.add_trace(
             go.Indicator(
                 mode="gauge+number",
+                value=y_point,
+                domain={"y": [0, 1], "x": [0.05, 0.95]},
+                title={"text": f"{name}"},
                 gauge={
-                    "axis": {"range": [None, 100]},
+                    "axis": {"range": [None, 100], "tickwidth": 1},
                     "bar": {"color": "blue"},
+                    "bgcolor": "rgba(0,0,0,0)",
+                    "borderwidth": 2,
+                    "bordercolor": "gray",
                     "steps": [
-                        {"range": [0, 30], "color": "lightgreen"},
-                        {"range": [30, 60], "color": "yellow"},
-                        {"range": [60, 100], "color": "red"},
+                        {"range": [0, 33], "color": "rgba(0,255,0,0.4)"},
+                        {"range": [33, 66], "color": "rgba(255,255,0,0.4)"},
+                        {"range": [66, 100], "color": "rgba(255,0,0,0.4)"},
                     ],
                     "threshold": {
-                        "line": {"color": "red", "width": 4},
+                        "line": {"color": "blue", "width": 4},
                         "thickness": 0.75,
-                        "value": 80,
+                        "value": y_point,
                     },
                 },
-                value=y_point,
-                domain={"x": [0, 1], "y": [0, 1]},
-                title={"text": f"{name}"},
             )
         )
 
