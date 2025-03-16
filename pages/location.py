@@ -337,8 +337,8 @@ def update_n_clicks_store(prev_clicks, next_clicks, day, stored_n_clicks, pre):
         else:
             return stored_n_clicks - 1
     elif button_id == "next-button":
-        if stored_n_clicks >= int(day) - 1:
-            return int(day)
+        if stored_n_clicks >= (int(day) - 1):
+            return int(day) - 1
         else:
             return stored_n_clicks + 1
     elif button_id == "predict-button":
