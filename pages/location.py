@@ -22,7 +22,8 @@ from dash import (
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import datetime
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 from pycaret.regression import load_model, predict_model
 
 # Load data
@@ -332,10 +333,16 @@ def render_content(tab, pathname):
                                 ),
                                 dcc.DatePickerRange(
                                     id="date-range",
-                                    min_date_allowed=data["timestamp"].min().date(),
-                                    max_date_allowed=data["timestamp"].max().date(),
-                                    start_date=data["timestamp"].min().date(),
-                                    end_date=data["timestamp"].max().date(),
+                                    min_date_allowed="2023-09-01",
+                                    max_date_allowed=(
+                                        data["timestamp"].max().date()
+                                        - relativedelta(months=1)
+                                    ),
+                                    start_date="2023-09-01",
+                                    end_date=(
+                                        data["timestamp"].max().date()
+                                        - relativedelta(months=1)
+                                    ),
                                     display_format="MMM DD, YYYY",
                                     style={"font-size": "16px"},
                                 ),
