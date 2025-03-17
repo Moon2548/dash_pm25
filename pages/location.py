@@ -830,6 +830,38 @@ def last_pre(click, data, mode):
                 titlefont=dict(size=14, color="#333"),
                 showgrid=True,
                 gridcolor="rgba(0, 0, 0, 0.1)",
+                # Add these lines for better handling of large date ranges
+                rangeslider=(
+                    dict(visible=True)
+                    if len(result_clean) > 30
+                    else dict(visible=False)
+                ),
+                rangeselector=(
+                    dict(
+                        buttons=list(
+                            [
+                                dict(
+                                    count=7, label="7d", step="day", stepmode="backward"
+                                ),
+                                dict(
+                                    count=14,
+                                    label="14d",
+                                    step="day",
+                                    stepmode="backward",
+                                ),
+                                dict(
+                                    count=30,
+                                    label="30d",
+                                    step="day",
+                                    stepmode="backward",
+                                ),
+                                dict(step="all", label="All"),
+                            ]
+                        )
+                    )
+                    if len(result_clean) > 30
+                    else None
+                ),
             ),
             yaxis=dict(
                 title=f"{name} ({unit})",
@@ -842,11 +874,18 @@ def last_pre(click, data, mode):
                 font_size=14,
                 font_family="Segoe UI, Roboto, sans-serif",
             ),
+            # Add this line to ensure the graph adjusts for large datasets
+            height=500 if len(result_clean) > 30 else 400,
+            # This is the key line that preserves UI state across updates
+            uirevision=f"{mode}_{data}",
         )
 
         # Highlight the selected day
         x_point = result_clean.index[click]
         y_point = result_clean["Predictions"][click]
+
+        # Adjust marker size based on the number of days
+        marker_size = 14 if len(result_clean) <= 30 else 10
 
         fig_pre.add_trace(
             go.Scatter(
@@ -854,7 +893,7 @@ def last_pre(click, data, mode):
                 y=[y_point],
                 mode="markers",
                 marker=dict(
-                    size=14,
+                    size=marker_size,
                     color="white",
                     line=dict(width=3, color=color),
                 ),
@@ -945,6 +984,7 @@ def last_pre(click, data, mode):
         indi.update_layout(
             paper_bgcolor="white",
             margin=dict(l=30, r=30, t=100, b=30),
+            uirevision=f"{mode}_{data}",  # Keep UI state consistent
         )
 
         # Buttons for navigation
@@ -995,6 +1035,12 @@ def last_pre(click, data, mode):
                 dcc.Graph(
                     figure=fig_pre,
                     style={"height": "100%"},
+                    config={
+                        "displayModeBar": True,
+                        "displaylogo": False,
+                        "modeBarButtonsToRemove": ["lasso2d", "select2d"],
+                        "scrollZoom": True,
+                    },
                 ),
                 html.Div(
                     style={
